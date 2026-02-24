@@ -9,7 +9,7 @@ Users can search by text, filter by price/country/brand/stock, and see results i
 
 This project is a small, production-style search stack for an online shop:
 
-- A **FastAPI backend** that exposes `/search`, `/filters`, and `/health` endpoints.
+- A **FastAPI backend** that with `/search`, `/filters`, and `/health` endpoints.
 - A **hybrid search pipeline** that:
   - Uses **Meilisearch** for fast keyword search and typo tolerance.
   - Uses **FAISS + sentence-transformers** for semantic similarity search.
@@ -25,8 +25,8 @@ The goal is to provide a realistic search experience (not just a simple SQL `LIK
 - **Backend**: FastAPI, Pydantic
 - **Keyword Search**: Meilisearch (Docker)
 - **Semantic Search**: FAISS, `sentence-transformers` (`all-MiniLM-L6-v2`)
-- **Data / ETL**: JSON products file, Python indexing script
-- **Frontend**: Vanilla HTML/CSS/JS single page
+- **Data**: JSON products file, Python indexing script
+- **Frontend**: HTML/CSS/JS single page
 - **Infra / Config**: Docker Compose, `.env` for Meilisearch config
 
 ---
@@ -36,33 +36,19 @@ The goal is to provide a realistic search experience (not just a simple SQL `LIK
 ### 1. Prerequisites
 
 - **Python** 3.13  
-- **Docker** and **docker compose**
+- **Docker**
 - Internet access the first time (to download the embedding model)
 
 ### 2. Clone and enter the project
 
-```bash
-git clone <your-repo-url> Search-Engine
-cd Search-Engine
-```
 
-### 3. Create and activate a virtual environment
-
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS / Linux
-# source .venv/bin/activate
-```
-
-### 4. Install Python dependencies
+### 3. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Configure Meilisearch connection
+### 4. Configure Meilisearch connection
 
 Create a `.env` file in the project root:
 
@@ -73,7 +59,7 @@ MASTER_KEY=masterkey123
 
 Docker starts Meilisearch with this master key, and the app connects using these values.
 
-### 6. Start Meilisearch with Docker
+### 5. Start Meilisearch with Docker
 
 ```bash
 docker compose up -d
@@ -94,7 +80,7 @@ python app/indexer.py
 On first run, the app will also build the FAISS index if it doesn’t find `faiss.index` yet (this can take a couple of minutes the first time).
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
 
 - API base URL: `http://localhost:8000`  
@@ -102,13 +88,7 @@ uvicorn app.main:app --reload --port 8000
 
 ### 9. Open the frontend
 
-Open `front/index.html` in your browser (double-click or serve it via a simple static server).
-
-It will call:
-
-- `GET http://localhost:8000/filters`
-- `GET http://localhost:8000/search?...`
-
+Open `front/index.html` in your browser (double-click)
 ---
 
 ## Example Queries to Try
