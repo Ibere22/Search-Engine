@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+meilisearch
+sentence-transformers
+faiss-cpu
+pandas
+python-dotenv

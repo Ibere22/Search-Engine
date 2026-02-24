@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SearchEngine</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --accent: #e8ff47;
+      --accent2: #47ffb2;
+      --text: #f0f0f0;
+      --muted: #888;
+      --danger: #ff4747;
+      --radius: 10px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 28px 40px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--muted); }
+
+    /* ── LAYOUT ── */
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 69px);
+    }
+
+    /* ── SIDEBAR ── */
+    aside {
+      border-right: 1px solid var(--border);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .filter-group label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .filter-group select,
+    .filter-group input[type="number"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      appearance: none;
+      transition: border-color 0.15s;
+    }
+
+    .filter-group select:focus,
+    .filter-group input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked + .slider { background: var(--accent); }
+    .toggle input:checked + .slider::before { transform: translateX(18px); }
+
+    .btn-reset {
+      margin-top: auto;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── MAIN ── */
+    main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-area {
+      padding: 28px 36px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-wrap {
+      display: flex;
+      gap: 10px;
+    }
+
+    #searchInput {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      padding: 12px 18px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #searchInput::placeholder { color: var(--muted); }
+    #searchInput:focus { border-color: var(--accent); }
+
+    #searchBtn {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #0e0e0e;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    #searchBtn:hover { opacity: 0.85; }
+    #searchBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── META BAR ── */
+    .meta-bar {
+      padding: 12px 36px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      min-height: 41px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .meta-bar .accent { color: var(--accent2); }
+
+    /* ── RESULTS ── */
+    .results-area {
+      padding: 28px 36px;
+      flex: 1;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── PRODUCT CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.15s, transform 0.15s;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .card-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .tag.brand { border-color: #333; color: #aaa; }
+    .tag.country { border-color: #2a3a2a; color: var(--accent2); }
+    .tag.in-stock { border-color: #2a3a2a; color: var(--accent2); }
+    .tag.out-stock { border-color: #3a2a2a; color: var(--danger); }
+
+    /* ── STATES ── */
+    .state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 80px 20px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .state-icon {
+      font-size: 36px;
+      opacity: 0.4;
+    }
+
+    /* spinner */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .shell { grid-template-columns: 1fr; }
+      aside { border-right: none; border-bottom: 1px solid var(--border); }
+      header { padding: 20px; }
+      .search-area, .results-area, .meta-bar { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">search<span>/</span>engine</div>
+</header>
+
+<div class="shell">
+  <!-- SIDEBAR FILTERS -->
+  <aside>
+    <div class="filter-group">
+      <label>Country</label>
+      <select id="countryFilter">
+        <option value="">All countries</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Brand</label>
+      <select id="brandFilter">
+        <option value="">All brands</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Price range</label>
+      <div class="price-row">
+        <input type="number" id="minPrice" placeholder="Min" min="0"/>
+        <input type="number" id="maxPrice" placeholder="Max" min="0"/>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="toggle-row">
+        <span>In stock only</span>
+        <label class="toggle">
+          <input type="checkbox" id="inStockFilter"/>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-reset" onclick="resetFilters()">Reset filters</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="search-area">
+      <div class="search-wrap">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search products — try 'warm jacket' or 'wireless headphones'…"
+          autocomplete="off"
+        />
+        <button id="searchBtn" onclick="doSearch()">Search</button>
+      </div>
+    </div>
+
+    <div class="meta-bar" id="metaBar">
+      <span>Type a query to begin</span>
+    </div>
+
+    <div class="results-area" id="resultsArea">
+      <div class="state">
+        <div class="state-icon">⌕</div>
+        <span>Your results will appear here</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API = 'http://localhost:8000';
+
+  // ── Load filter options ──
+  async function loadFilters() {
+    try {
+      const res = await fetch(`${API}/filters`);
+      const data = await res.json();
+
+      const countryEl = document.getElementById('countryFilter');
+      data.countries.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        countryEl.appendChild(opt);
+      });
+
+      const brandEl = document.getElementById('brandFilter');
+      data.brands.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b; opt.textContent = b;
+        brandEl.appendChild(opt);
+      });
+    } catch (e) {
+      console.warn('Could not load filters:', e);
+    }
+  }
+
+  // ── Search ──
+  async function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+
+    const params = new URLSearchParams({ q });
+
+    const country  = document.getElementById('countryFilter').value;
+    const brand    = document.getElementById('brandFilter').value;
+    const minPrice = document.getElementById('minPrice').value;
+    const maxPrice = document.getElementById('maxPrice').value;
+    const inStock  = document.getElementById('inStockFilter').checked;
+
+    if (country)  params.append('country', country);
+    if (brand)    params.append('brand', brand);
+    if (minPrice) params.append('min_price', minPrice);
+    if (maxPrice) params.append('max_price', maxPrice);
+    if (inStock)  params.append('inStock', 'true');
+
+    setLoading(true);
+
+    try {
+      const res  = await fetch(`${API}/search?${params}`);
+      const data = await res.json();
+      renderResults(data);
+    } catch (e) {
+      renderError();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Render ──
+  function renderResults(data) {
+    const meta = document.getElementById('metaBar');
+    const area = document.getElementById('resultsArea');
+
+    if (!data.results || data.results.length === 0) {
+      meta.innerHTML = `<span>No results for "<strong>${data.query}</strong>"</span>`;
+      area.innerHTML = `<div class="state"><div class="state-icon">∅</div><span>No products found</span></div>`;
+      return;
+    }
+
+    meta.innerHTML = `
+      <span>Found <span class="accent">${data.total_hits}</span> results</span>
+      <span>·</span>
+      <span>${data.took_ms}ms</span>
+      <span>·</span>
+      <span>for "<strong>${data.query}</strong>"</span>
+    `;
+
+    const grid = document.createElement('div');
+    grid.className = 'results-grid';
+
+    data.results.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.animationDelay = `${i * 40}ms`;
+
+      const stockTag = p.inStock
+        ? `<span class="tag in-stock">in stock</span>`
+        : `<span class="tag out-stock">out of stock</span>`;
+
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-name">${p.name}</div>
+          <div class="card-price">$${p.price.toFixed(2)}</div>
+        </div>
+        <div class="card-desc">${p.description}</div>
+        <div class="card-footer">
+          <span class="tag brand">${p.brand}</span>
+          <span class="tag country">${p.country}</span>
+          ${stockTag}
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    area.innerHTML = '';
+    area.appendChild(grid);
+  }
+
+  function renderError() {
+    document.getElementById('metaBar').innerHTML = `<span style="color:var(--danger)">Request failed — is the API running?</span>`;
+    document.getElementById('resultsArea').innerHTML = `<div class="state"><div class="state-icon">✕</div><span>Could not reach the server</span></div>`;
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('searchBtn');
+    const area = document.getElementById('resultsArea');
+    btn.disabled = on;
+    if (on) {
+      area.innerHTML = `<div class="state"><div class="spinner"></div><span>Searching…</span></div>`;
+    }
+  }
+
+  function resetFilters() {
+    document.getElementById('countryFilter').value = '';
+    document.getElementById('brandFilter').value = '';
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
+    document.getElementById('inStockFilter').checked = false;
+  }
+
+  // Enter key triggers search
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  // Init
+  loadFilters().then(() => doSearch());
+
+  document.getElementById('countryFilter').addEventListener('change', doSearch);
+  document.getElementById('brandFilter').addEventListener('change', doSearch);
+  document.getElementById('inStockFilter').addEventListener('change', doSearch);
+
+</script>
+</body>
+</html>
